@@ -22,7 +22,9 @@ For the second model the goal is to analyse violent police behavior. To do this,
 
 ## Fundamental Questions
 
-(At the end of the project you want to find the answer to these questions) (Formulate a few, clear questions. Articulate them in sub-questions, from the more general to the more specific. )
+>* How does discrimination affects Epstein's model?
+>* Can we simulate the effect of that police brutality has on protests?
+>* If we use realitstic data, how does the model behave?
 
 ## Expected Results
 
