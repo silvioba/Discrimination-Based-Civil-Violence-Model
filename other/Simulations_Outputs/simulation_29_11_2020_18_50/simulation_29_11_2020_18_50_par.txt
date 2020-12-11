@@ -1,0 +1,15 @@
+nation_dimension: 40
+p_class_1: 0.2
+vision_agent: 7
+vision_cop: 7
+L: 0.82
+T: 0.1
+Jmax: 5
+factor_Jmax1: 5
+k: 2.3
+prob_arrest_class_1: 0.35
+n_agents: 1120
+n_cops: 64
+tfin: 300
+D_const:[5, 10]
+validation_times:30
