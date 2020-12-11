@@ -1,3 +1,6 @@
+## paper_model.py
+## Author: S.B. E.G.
+## The refered paper is Epstein's 2002 paper
 import numpy as np
 import matplotlib.pyplot as plt
 import random
@@ -15,22 +18,22 @@ import time as time_
 # ============================================
 
 # General
-nation_dimension = 40  # Will be a (nation_dimension,nation_dimension) matrix
-vision_agent = 7  # Agent's vision
-vision_cop = 7  # Cop's vision
-L = 0.82  # Legitimacy, must be element of [0,1]
-T = 0.1  # Threshold of agent's activation
-Jmax = 30  # Maximal Jail time for type 0
-k = 2.3  # Constant for P: estimated arrest probability
+nation_dimension = 40   # Will be a (nation_dimension,nation_dimension) matrix
+vision_agent = 7        # Agent's vision
+vision_cop = 7          # Cop's vision
+L = 0.82                # Legitimacy, must be element of [0,1]
+T = 0.1                 # Threshold of agent's activation
+Jmax = 30               # Maximal Jail time for type 0
+k = 2.3                 # Constant for P: estimated arrest probability
 
 # Model bad cops
 percentage_bad_cops = 0
 
 # Model two classes
-D_const = [5, 10]  #
-p_class_1 = 0.2  # Probability for an agent to be in class 1
+D_const = [5, 10]       # Do not matter for this version
+p_class_1 = 0.2         # Probability for an agent to be in class 1
 prob_arrest_class_1 = p_class_1  # Probability, given an arrest is made, that the arrested agent is of type 1
-factor_Jmax1 = 1.0  # How many time is Jmax for type 1 bigger than for type 0
+factor_Jmax1 = 1.0      # How many time is Jmax for type 1 bigger than for type 0
 
 
 # ============================================
@@ -281,6 +284,7 @@ color_name_list = ["white", "green", "red", "darkorange", "lime", "fuchsia", "go
 
 time = range(tfin)
 
+# Where to storage the data for more valiadation runs
 val_D_list = np.zeros((validation_times, tfin))
 val_arrested_list = np.zeros((validation_times, tfin))
 val_type_1_arrested_list = np.zeros((validation_times, tfin))
@@ -291,7 +295,9 @@ val_type_0_active_list = np.zeros((validation_times, tfin))
 val_ratio_list = np.zeros((validation_times, tfin))
 
 for val_round in range(validation_times):
+    # Itarates for every valudation
     print('Start validation round nr' + str(val_round))
+    # Where to save the data
     D_list = [0] * len(range(tfin))
     arrested_list = [0] * len(range(tfin))
     type_1_arrested_list = [0] * len(range(tfin))
@@ -301,6 +307,7 @@ for val_round in range(validation_times):
     type_0_active_list = [0] * len(range(tfin))
     ratio_list = [0] * len(range(tfin))
     for t in trange(tfin):
+        # Iterates over time
         list_agent_near_vision_agent = {}
         list_agent_near_vision_cop = {}
         list_cop_near_vision_agent = {}
@@ -311,10 +318,6 @@ for val_round in range(validation_times):
                 list_agent_near_vision_cop[(i, j)] = []
                 list_cop_near_vision_agent[(i, j)] = []
                 list_arrested_vision[(i, j)] = []
-        # list_agent_near_vision_agent = [[[]] * nation_dimension] * nation_dimension
-        # list_agent_near_vision_cop = [[[]] * nation_dimension] * nation_dimension
-        # list_cop_near_vision_agent = [[[]] * nation_dimension] * nation_dimension
-        # list_arrested_vision = [[[]] * nation_dimension] * nation_dimension
         arrested = 0
         type_1_arrested = 0
         type_0_arrested = 0
@@ -350,7 +353,6 @@ for val_round in range(validation_times):
                     type_1_active = type_1_active + 1
                 else:
                     type_0_active = type_0_active + 1
-
         D = agent.D
         ratio = agent.arrested_ratio
         for cop in cops:
@@ -379,34 +381,40 @@ for val_round in range(validation_times):
         cops = [cop.move() for cop in cops]
         agents = [ag.move() for ag in agents]
         for agent in agents:
+            # Computes the agents near each agent, improves efficency
             for i in range(max(0, agent.position[0] - vision_agent),
                            min(nation_dimension, agent.position[0] + vision_agent + 1)):
                 for j in range(max(0, agent.position[1] - vision_agent),
                                min(nation_dimension, agent.position[1] + vision_agent + 1)):
                     list_agent_near_vision_agent[(i,j)].append(agent)
         for agent in agents:
+            # Computes the agents near each cop, improves efficency
             for i in range(max(0, agent.position[0] - vision_cop),
                            min(nation_dimension, agent.position[0] + vision_cop + 1)):
                 for j in range(max(0, agent.position[1] - vision_cop),
                                min(nation_dimension, agent.position[1] + vision_cop + 1)):
                     list_agent_near_vision_cop[(i,j)].append(agent)
         for cop in cops:
+            # Computes the cops near each agent, improves efficency
             for i in range(max(0, cop.position[0] - vision_agent),
                            min(nation_dimension, cop.position[0] + vision_agent + 1)):
                 for j in range(max(0, cop.position[1] - vision_agent),
                                min(nation_dimension, cop.position[1] + vision_agent + 1)):
                     list_cop_near_vision_agent[(i,j)].append(agent)
         for agent in agents:
+            # Computes the arrested agents near each agent, used for discrimiantion
             if agent.status == 2:
                 for i in range(max(0, cop.position[0] - 40),
                                min(nation_dimension, cop.position[0] + 40 + 1)):
                     for j in range(max(0, cop.position[1] - 40),
                                    min(nation_dimension, cop.position[1] + 40 + 1)):
                         list_arrested_vision[(i,j)].append(agent)
+        # Do time iteration
         cops = [cop.time_step_no_move(agents) for cop in cops]
         agents = [
             ag.time_step_no_move(agents, list_agent_near_vision_agent, list_cop_near_vision_agent, list_arrested_vision)
             for ag in agents]
+        # Store data and compute means/std dev
         D_list[t] = D / D_const[agent.type]
         arrested_list[t] = arrested
         type_1_arrested_list[t] = type_1_arrested
@@ -415,7 +423,6 @@ for val_round in range(validation_times):
         type_1_active_list[t] = type_1_active
         type_0_active_list[t] = type_0_active
         ratio_list[t] = ratio
-
         val_D_list[val_round, t] = D
         val_arrested_list[val_round, t] = arrested
         val_type_1_arrested_list[val_round, t] = type_1_arrested

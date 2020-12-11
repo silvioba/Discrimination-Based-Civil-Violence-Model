@@ -1,3 +1,7 @@
+## simulation_program.py
+## Author: S.B. E.G.
+## The refered paper is Epstein's 2002 paper
+## More comments on the paper_model.py program
 import numpy as np
 import matplotlib.pyplot as plt
 import random
@@ -14,13 +18,13 @@ from tqdm import tqdm, trange
 # ============================================
 
 # General
-nation_dimension = 40  # Will be a (nation_dimension,nation_dimension) matrix
-vision_agent = 7  # Agent's vision
-vision_cop = 7  # Cop's vision
-L = 0.82  # Legitimacy, must be element of [0,1]
-T = 0.1  # Threshold of agent's activation
-Jmax = 15  # Maximal Jail time for type 0
-k = 2.3  # Constant for P: estimated arrest probability
+nation_dimension = 40   # Will be a (nation_dimension,nation_dimension) matrix
+vision_agent = 7        # Agent's vision
+vision_cop = 7          # Cop's vision
+L = 0.82                # Legitimacy, must be element of [0,1]
+T = 0.1                 # Threshold of agent's activation
+Jmax = 30               # Maximal Jail time for type 0
+k = 2.3                 # Constant for P: estimated arrest probability
 
 # Model bad cops
 percentage_bad_cops = 0
