@@ -14,54 +14,52 @@ import matplotlib.animation as animation
 # Global variables for the model
 # ============================================
 
-nation_dimension = 45       # defines size of matrix (nation_dimension * nation_dimension)
+nation_dimension = 50       # defines size of matrix (nation_dimension * nation_dimension)
 vision = 4                  # vision of each agent / cop
 L = 0.3                     # initial legitimacy for all agents
-T = 0.1                     # Threshold for agent's activation
-Jmax = 8                    # max jail time
+T = 0.1                     # threshold for agent's activation
+Jmax = 8                    # maximum jail time
 k = 1.5                     # constant for making arrest probability reasonable
-percentage_bad_cops = 0.02  # amount of bad cops
-bad_cop_influence = 1       # bad influence of bad cops (should be a big positive value)
-good_cop_influence = -0.1   # good influence of good cops (should be a small negative value)
+percentage_bad_cops = 0.05  # amount of bad cops
+bad_cop_influence = 1       # influence of bad cops (should be a big positive value)
+good_cop_influence = -0.12  # influence of good cops (should be a small negative value)
 C = 0.2                     # constant to make Il reasonable
-C2 = 10                     # constant to make to relation between G and N reasonable
-C3 = 3                      # constant that make the influence of activ agents near an agent greater (in P)
+C2 = 10                     # constant to make the relation between G and N reasonable
+C3 = 3                      # constant to scale the influence of active agents
 
 # ============================================
 # Simulation data
 # ============================================
-p_agents = 0.7              # Number of considerate agents
-p_cops = 0.04               # Number of considerate cops
-tfin = 100                  # Amount of steps to calculate
+p_agents = 0.7              # Number of agents
+p_cops = 0.08               # Number of cops
+tfin = 400                  # Amount of steps to calculate
 
-save = True                 # If True saves the data into a folder in the current directory
-interactive = False         # If true opens the matplotlib page after with a slider
-makeanimation= True         # If true creates an animation
+save = True                 # If true saves the data into a folder in the current directory
+interactive = False         # If true opens an webpage with the results after
+makeanimation = False       # If true creates an animation
 
 
 
 class Agent():
     # Initialization of new agent
     def __init__(self, position, L, Jmax):
-        self.status = 0                  # 0 inactive, 1 active, 2 jail
-        self.position = position         
-        self.H = np.random.uniform(0, 1) # percieved hardship
-        self.G = self.H * (1 - L)        # grievance
-        self.R = np.random.uniform(0, 1) # risk aversion
-        self.J = 0                       # jail time
-        self.P = 0                       # arrest probability
-        self.N = C2*self.R * self.P      # net risk
-        self.Il = 1-L                    # illegitimacy
+        self.status = 0                   # 0 inactive agent, 1 active agent, 2 jail
+        self.position = position
+        self.H = np.random.uniform(0, 1)  # perceived hardship
+        self.G = self.H * (1 - L)         # grievance
+        self.R = np.random.uniform(0, 1)  # risk aversion
+        self.J = 0                        # jail time
+        self.P = 0                        # arrest probablity
+        self.N = C2*self.R * self.P       # net risk
+        self.Il = 1-L                     # illegitimacy
      
 
     # updates status -> active / not active / jail
     def update_status(self):
         if self.status == 2 and self.J > 0:
             self.J = self.J - 1
-            
         elif self.status == 2 and self.J == 0:
             self.status = 1
-            
         elif self.G - self.N > T:
             self.status = 1
         else:
@@ -91,7 +89,7 @@ class Agent():
         cops_near = self.near_cops()
         self.P = 1 - np.exp(-k * (1+cops_near) / (1.0+C3*active_agents_near))
 
-    # calculate overall aggressivity of near cops
+    # calculate overall aggressiveness of near cops
     def percieved_aggressivity_of_cops(self):
         percieved_aggressivity = 0
         for cop in [cop for cop in get_nearby_agents(self.position[0], self.position[1], vision) if isinstance(cop, Cop)]:
@@ -135,10 +133,14 @@ class Agent():
 
 
 class Cop():
-    # initialize new element of cop
-    def __init__(self, position):
+    # initialize new Cop
+    def __init__(self, position,good):
         self.position = position
-        self.aggressivity = random.choices([bad_cop_influence, good_cop_influence],[percentage_bad_cops, 1-percentage_bad_cops])[0]
+        if good:
+           self.aggressivity= good_cop_influence
+        else:
+            self.aggressivity=bad_cop_influence
+        
 
     # move to empty field nearby
     def move(self):
@@ -154,7 +156,7 @@ class Cop():
     def update_agent_status(self):
         nearby_agents_and_cops = get_nearby_agents(self.position[0], self.position[1], vision)
         nearby_agents = [agnt for agnt in nearby_agents_and_cops if isinstance(agnt, Agent)]
-        near_active_agents = []
+        near_active_agents = []  # List activ agents within vision
 
         for agnt in nearby_agents:
             if agnt.status == 1:
@@ -173,7 +175,7 @@ class Cop():
 # Simulation computation
 # ============================================
 
-now = datetime.now()    # Gets date and time info
+now = datetime.now()    # Gets date and time info for creating the data folder
 dt_string = now.strftime("%d_%m_%Y_%H_%M")
 name_to_save = 'simulation_' + dt_string
 if save:
@@ -182,6 +184,22 @@ if save:
         os.mkdir(name_to_save)
 name_to_save = name_to_save + '/' + name_to_save
 
+# Calculate the amount of good and bad cops to always have the same amount of cops
+nsquare=nation_dimension**2
+nagent=int(nsquare*p_agents)
+ngoodcops=int(nsquare*p_cops*(1-percentage_bad_cops))
+nbadcop=int(nsquare*p_cops*percentage_bad_cops)
+status_list=[]
+for i in range(nsquare):
+    if i<=nagent:
+        status_list.append(0)
+    elif i<=nagent+ngoodcops:
+        status_list.append(2)
+    elif i<=nagent+ngoodcops+nbadcop:
+        status_list.append(3)
+    else:
+        status_list.append(-1)
+
 # Create the initial array
 agents = []
 cops = []
@@ -189,13 +207,18 @@ positions = []
 for i in range(nation_dimension):
     line = []
     for j in range(nation_dimension):
-        rand = random.random()
-        if rand < p_agents:
+        stat = random.choice(status_list)
+        status_list.remove(stat)
+        if stat==0:
             agent_instance = Agent([i, j], L, Jmax)
             line.append(agent_instance)
             agents.append(agent_instance)
-        elif rand < (p_agents + p_cops):
-            cop_instance = Cop([i, j])
+        elif stat==2:
+            cop_instance = Cop([i, j],True)
+            line.append(cop_instance)
+            cops.append(cop_instance)
+        elif stat==3:
+            cop_instance = Cop([i, j],False)
             line.append(cop_instance)
             cops.append(cop_instance)
         else:
@@ -375,11 +398,11 @@ if save:
     ax.set(xlabel='time (epochs)', ylabel="percentage active", title="Percentage of active agents")
     ax.grid()
     figu.savefig(name_to_save + 'Percentage_active.png')
-
-    plt.show()
+    if not makeanimation:
+        plt.show()
 
 if makeanimation:
-    ani = animation.ArtistAnimation(fig, ims, interval=250, blit=True,                            repeat_delay=1000)
+    ani = animation.ArtistAnimation(fig, ims, interval=140, blit=True,                            repeat_delay=1000)
     ani.save(name_to_save+'animation.gif')
 
 
