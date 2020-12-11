@@ -22,9 +22,9 @@ For the second model the goal is to analyse violent police behavior. To do this,
 
 ## Fundamental Questions
 
->* How does discrimination affects Epstein's model?
->* Can we simulate the effect of that police brutality has on protests?
->* If we use realitstic data, how does the model behave?
+* How does discrimination affects Epstein's model?
+* Can we simulate the effect of that police brutality has on protests?
+* If we use realitstic data, how does the model behave?
 
 ## Expected Results
 
