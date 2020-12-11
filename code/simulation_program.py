@@ -26,7 +26,7 @@ k = 2.3  # Constant for P: estimated arrest probability
 percentage_bad_cops = 0
 
 # Model two classes
-D_const = [1, 1]  # put like 20 here!
+D_const = [1, 1]  # Constants for scaling
 p_class_1 = 0.2  # Probability for an agent to be in class 1
 prob_arrest_class_1 = 0.6  # Probability, given an arrest is made, that the arrested agent is of type 1
 factor_Jmax1 = 1.5  # How many time is Jmax for type 1 bigger than for type 0
@@ -288,13 +288,6 @@ val_active_list = np.zeros((validation_times, tfin))
 val_type_1_active_list = np.zeros((validation_times, tfin))
 val_type_0_active_list = np.zeros((validation_times, tfin))
 
-# std_D_list = [0] * len(range(tfin))
-# std_arrested_list = [0] * len(range(tfin))
-# std_type_1_arrested_list = [0] * len(range(tfin))
-# std_type_0_arrested_list = [0] * len(range(tfin))
-# std_active_list = [0] * len(range(tfin))
-# std_type_1_active_list = [0] * len(range(tfin))
-# std_type_0_active_list = [0] * len(range(tfin))
 for val_round in range(validation_times):
     print('Start validation round nr' + str(val_round))
     D_list = [0] * len(range(tfin))
