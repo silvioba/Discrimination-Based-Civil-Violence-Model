@@ -26,9 +26,6 @@ For the second model the goal is to analyse violent police behavior. To do this,
 * Can we simulate the effect of that police brutality has on protests?
 * If we use realitstic data, how does the model behave?
 
-## Expected Results
-
-(What are the answers to the above questions that you expect to find before starting your research?)
 
 ## References
 
