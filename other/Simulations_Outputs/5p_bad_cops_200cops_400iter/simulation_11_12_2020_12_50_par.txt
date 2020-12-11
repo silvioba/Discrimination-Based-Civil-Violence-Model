@@ -1,0 +1,14 @@
+nation_dimension: 50
+percentage_bad_cops: 0.05
+vision: 4
+L: 0.3
+T: 0.1
+Jmax: 8
+k: 1.5
+p_agents: 0.7
+p_cops: 0.08
+bad_cop_influence: 1
+good_cop_influence: -0.12
+C: 0.2
+C3: 3
+tfin: 400
